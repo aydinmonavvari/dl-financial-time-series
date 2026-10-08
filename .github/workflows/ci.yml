@@ -8,8 +8,12 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Job A — light deps (no torch). The torch-dependent test modules skip
+  # themselves via pytest.importorskip("torch"): 20 of 34 test cases run here.
+  # Every test is offline (synthetic fixtures, no network access).
   test:
     runs-on: ubuntu-latest
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
 
@@ -25,8 +29,34 @@ jobs:
       - name: Lint (ruff)
         run: ruff check .
 
-      # CI installs only the light base deps (no torch): the torch-dependent test
-      # modules skip themselves via pytest.importorskip("torch"), and every other
-      # test is offline (synthetic fixtures, no network access).
-      - name: Tests (pytest, offline, no network)
+      - name: Tests (pytest, offline, no network; torch modules skip)
+        run: pytest tests/ -q
+
+  # Job B — full suite with torch (34/34 test cases, no skips).
+  # CPU-only wheel first so the CUDA-bundled Linux default is never pulled;
+  # then the package with dev+torch extras. Runs offline on CPU only.
+  # Expected wall time < 10 min (torch CPU wheel ~200 MB + ~3 min tests).
+  torch:
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    env:
+      PYTHONHASHSEED: "42"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install CPU-only torch, then package with dev+torch extras
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e .[dev,torch]
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Tests (pytest, full suite, no skips)
         run: pytest tests/ -q

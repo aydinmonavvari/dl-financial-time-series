@@ -85,10 +85,18 @@ instrument; here the question is whether tiny sequence architectures do any bett
 ## 7 · Data sources
 
 Yahoo Finance daily bars via `yfinance` (start 2010-01-01). The pipeline is
-**cache-first and offline-safe**: it reuses the local cache `data/raw/spy_daily.csv`
-(git-ignored; this run copied the cache already produced by the sibling Project 03
-repo), falls back to a fresh `yfinance` download only if no cache exists, and all
-tests run offline on synthetic fixtures. The repository never commits datasets.
+**cache-first and offline-safe**:
+
+1. it reuses the local cache `data/raw/spy_daily.csv` (git-ignored; this run copied
+   the cache already produced by the sibling Project 03 repo);
+2. if that is missing, it copies the **optional** sibling Project 03 cache
+   (`../ml-market-prediction-study/data/raw/spy_daily.csv`, resolved relative to this
+   repo's root — never hardcoded). Set the environment variable `P03_SPY_CACHE_PATH`
+   to point somewhere else. This fallback is purely optional: if the sibling cache is
+   absent, the pipeline simply falls through to step 3;
+3. otherwise it fetches fresh bars with `yfinance` (network required).
+
+All tests run offline on synthetic fixtures. The repository never commits datasets.
 
 ## 8 · Architecture
 
@@ -103,7 +111,8 @@ src/dl_financial_time_series/
 ├── controls.py      # no-signal noise features, feature-group ablation design
 └── pipeline.py      # end-to-end study → reports/ + figures/
 scripts/run_study.py # CLI: --seed --epochs --folds --data
-tests/               # 35 offline tests (torch-dependent ones skip when torch absent)
+tests/               # 34 offline test cases (28 test functions; torch-dependent
+                     #   ones skip when torch is absent)
 ```
 
 Fold geometry (from the actual run, `reports/metrics.json`):
@@ -269,8 +278,17 @@ Per-fold ROC-AUC (no method is consistent across folds):
 - Full run: `python scripts/run_study.py` → rewrites `reports/metrics.json`,
   `reports/summary.md` and all six figures in ~75 s on CPU.
 - `torch` is an optional extra (`pip install -e .[torch]`); the test suite skips
-  torch-dependent modules when torch is absent (CI installs only the light deps).
-- Data: cache-first (local CSV → sibling P03 cache → yfinance). No dataset is
+  torch-dependent modules when torch is absent.
+- **CI (`.github/workflows/ci.yml`) runs two jobs, and only these:**
+  - **Job A (`test`, light deps):** installs `-e .[dev]` only — no torch — so the
+    torch-dependent modules skip themselves via `pytest.importorskip`: **20 of the 34
+    test cases run** (plus ruff).
+  - **Job B (`torch`, full suite):** installs the CPU-only torch wheel first, then
+    `-e .[dev,torch]`, and runs the **entire suite: 34 of 34 test cases, no skips**
+    (plus ruff), with `PYTHONHASHSEED` pinned.
+  - Neither job runs the study pipeline, fetches network data, or uses a GPU.
+- Data: cache-first (local CSV → optional sibling P03 cache (env override
+  `P03_SPY_CACHE_PATH`) → yfinance). No dataset is
   committed; `data/raw/*` and `data/processed/*` are git-ignored except `.gitkeep`.
 
 ## 16 · Installation
@@ -282,8 +300,9 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e .[dev,torch]     # torch needed for the models; [dev] suffices for light tests
 ```
 
-Python ≥ 3.11. `requirements.txt` documents the full validated local environment
-(Python 3.12, torch 2.14.1+cpu).
+Python ≥ 3.11. `requirements.txt` pins the full validated local environment
+(Python 3.12.14, torch 2.14.1+cpu via the CPU wheel index, numpy 2.1.3, pandas 2.2.3,
+scikit-learn 1.5.2, matplotlib 3.9.2, yfinance 1.7.0).
 
 ## 17 · Usage
 
@@ -321,7 +340,7 @@ print(x_seq.shape)   # (4016, 30, 12) — windows ending at each decision day
 ├── reports/summary.md          # human-readable run summary
 ├── scripts/run_study.py        # CLI entry point
 ├── src/dl_financial_time_series/
-└── tests/                      # 35 offline tests
+└── tests/                      # 34 offline test cases (28 test functions)
 ```
 
 ## 20 · Future work

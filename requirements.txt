@@ -1,11 +1,12 @@
-# Full local environment (Python 3.12, CPU-only torch).
-# The package itself needs only the light base deps in pyproject.toml;
-# torch is required only for the deep-learning models and is an extra: `pip install -e .[torch]`.
-numpy>=1.26
-pandas>=2.0
-scikit-learn>=1.4
-matplotlib>=3.8
-torch>=2.2
-yfinance>=0.2
-pytest>=8.0
-ruff>=0.6
+# Full validated local environment (Python 3.12.14, CPU-only torch), exact pins.
+# torch is pinned to CPU wheels via the PyTorch CPU index (header line below);
+# install with:  pip install -r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy==2.1.3
+pandas==2.2.3
+scikit-learn==1.5.2
+matplotlib==3.9.2
+torch==2.14.1+cpu
+yfinance==1.7.0
+pytest==9.0.2
+ruff==0.16.10

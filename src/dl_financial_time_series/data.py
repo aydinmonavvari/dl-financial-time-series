@@ -12,6 +12,7 @@ Project 03 (ml-market-prediction-study) cached for SPY 2010→present.
 from __future__ import annotations
 
 import logging
+import os
 import shutil
 from pathlib import Path
 
@@ -21,8 +22,25 @@ logger = logging.getLogger(__name__)
 
 REQUIRED_COLUMNS = ("open", "high", "low", "close", "volume")
 
-# Sibling portfolio repo (Project 03) already cached SPY daily bars 2010→present.
-P03_SPY_CACHE = Path("/home/z/portfolio/ml-market-prediction-study/data/raw/spy_daily.csv")
+# This repo's root (src/dl_financial_time_series/data.py -> parents[2]).
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def p03_spy_cache() -> Path:
+    """Optional sibling-repo fallback: Project 03's cached SPY daily CSV.
+
+    Resolution order:
+    1. the ``P03_SPY_CACHE_PATH`` environment variable, if set (explicit override);
+    2. ``../ml-market-prediction-study/data/raw/spy_daily.csv`` relative to this
+       repo's root (the sibling portfolio repo that already cached SPY 2010→present).
+
+    The sibling cache is a purely optional fallback: when it does not exist,
+    ``ensure_spy_data`` simply falls through to a fresh ``yfinance`` download.
+    """
+    override = os.environ.get("P03_SPY_CACHE_PATH")
+    if override:
+        return Path(override).expanduser()
+    return REPO_ROOT.parent / "ml-market-prediction-study" / "data" / "raw" / "spy_daily.csv"
 
 
 def load_spy_csv(path: Path | str) -> pd.DataFrame:
@@ -66,8 +84,9 @@ def ensure_spy_data(raw_dir: Path | str, start: str = "2010-01-01") -> Path:
     if cache.exists():
         logger.info("using cached SPY data: %s", cache)
         return cache
-    if P03_SPY_CACHE.exists():
-        shutil.copyfile(P03_SPY_CACHE, cache)
+    p03_cache = p03_spy_cache()
+    if p03_cache.exists():
+        shutil.copyfile(p03_cache, cache)
         logger.info("copied Project 03 SPY cache into %s", cache)
         return cache
     logger.info("fetching SPY from Yahoo Finance (start=%s)", start)
