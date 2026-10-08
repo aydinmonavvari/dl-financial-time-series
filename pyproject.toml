@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dl-financial-time-series"
+version = "1.0.0"
+description = "Tiny deep-learning architectures (LSTM, GRU, temporal CNN, Transformer) for next-day SPY direction forecasting under strict walk-forward evaluation (educational research project)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Aydin Monavvari" }]
+keywords = [
+  "deep-learning",
+  "lstm",
+  "gru",
+  "transformer",
+  "financial-time-series",
+  "walk-forward-validation",
+]
+dependencies = [
+  "pandas>=2.0",
+  "numpy>=1.26",
+  "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+torch = ["torch>=2.2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# torch-guarded test modules import after pytest.importorskip by design (torch optional in CI)
+"tests/test_models.py" = ["E402"]
+"tests/test_controls.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

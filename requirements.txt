@@ -1,0 +1,11 @@
+# Full local environment (Python 3.12, CPU-only torch).
+# The package itself needs only the light base deps in pyproject.toml;
+# torch is required only for the deep-learning models and is an extra: `pip install -e .[torch]`.
+numpy>=1.26
+pandas>=2.0
+scikit-learn>=1.4
+matplotlib>=3.8
+torch>=2.2
+yfinance>=0.2
+pytest>=8.0
+ruff>=0.6

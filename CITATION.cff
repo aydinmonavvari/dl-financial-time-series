@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "dl-financial-time-series: tiny deep-learning models for next-day SPY direction forecasting under strict walk-forward evaluation"
+authors:
+  - family-names: Monavvari
+    given-names: Aydin
+    email: 245710241+aydinmonavvari@users.noreply.github.com
+version: 1.0.0
+date-released: "2026-10-08"
+license: MIT
+repository-code: "https://github.com/aydinmonavvari/dl-financial-time-series"
+keywords:
+  - deep-learning
+  - lstm
+  - gru
+  - transformer
+  - financial-time-series
+  - walk-forward-validation
+abstract: "Educational research project evaluating whether small deep-learning architectures (LSTM, GRU, temporal 1D-CNN, tiny Transformer encoder) improve next-day S&P 500 ETF direction forecasting over simple baselines, under strict walk-forward evaluation with embargo, train-only scaling, a no-signal leakage control and cost-adjusted strategy evaluation."
