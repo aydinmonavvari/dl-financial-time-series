@@ -41,7 +41,7 @@ walk-forward folds, embargo, train-only scaling, seeded determinism, leakage
 controls, transaction costs — and only then asks whether the models beat trivial
 baselines. The design deliberately uses *tiny* models (a hard 100k-parameter cap;
 actual sizes 4.5k–9k parameters) so that the question "do sequence architectures
-extract directional signal from 12 causal daily features?" is answered without
+extract directional signal from 13 causal daily features?" is answered without
 confounding the answer with model scale or compute.
 
 ## Research Question
@@ -81,7 +81,7 @@ a long/flat directional strategy net of 10 bps per-side costs outperform buy&hol
   a local CSV cache (this run copied the cache produced by the sibling Project 03
   repository) and only downloads when no cache exists; tests never touch the
   network.
-- **Features (12, strictly causal at day t):** log return and 5 lagged returns;
+- **Features (13, strictly causal at day t):** log return and 5 lagged returns;
   realized volatility (10d and 21d rolling std of log returns); mean 10d
   high-low range; 21d volume z-score; Wilder-smoothed RSI(14); distance from the
   50d and 200d simple moving averages.
@@ -105,7 +105,7 @@ a long/flat directional strategy net of 10 bps per-side costs outperform buy&hol
    heads, FF 64, causal mask). All emit one logit; BCEWithLogitsLoss; dropout 0.2.
    Parameter counts (actual): GRU 4,545; LSTM 6,049; CNN 7,521; Transformer 9,025.
 4. **Baselines.** Majority class (train positive rate); logistic regression on the
-   12 scaled features; ridge regression predicting the next return (direction =
+   13 scaled features; ridge regression predicting the next return (direction =
    sign of the prediction).
 5. **Metrics.** Accuracy (Wilson 1927 exact 95% CI), ROC-AUC (approximate Wilson
    interval over concordant pairs — documented as an approximation), long/flat
@@ -202,7 +202,7 @@ yield a next-day directional edge over trivial baselines.
   75 s CPU total). Larger architectures or longer training could in principle do
   better, though the burden of proof lies with the claim, and the AUC ≈ 0.5
   ceiling suggests the input features, not capacity, are the binding constraint.
-- **Single asset and feature universe.** SPY only; 12 daily price/volume features;
+- **Single asset and feature universe.** SPY only; 13 daily price/volume features;
   no cross-asset, options, or order-flow information.
 - **Single-seed headline.** All numbers use seed 42 with a determinism guarantee;
   seed-level uncertainty is not quantified.

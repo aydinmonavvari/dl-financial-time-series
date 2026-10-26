@@ -54,7 +54,7 @@ instrument; here the question is whether tiny sequence architectures do any bett
 
 1. **Task** — binary classification: is `close[t+1] > close[t]` (UP) or not (DOWN)?
    Every feature at day `t` uses data up to and including day `t` only.
-2. **Features (12, strictly causal)** — log return + 5 lags; realized volatility
+2. **Features (13, strictly causal)** — log return + 5 lags; realized volatility
    (10d, 21d rolling std of log returns); mean 10d high-low range; 21d volume
    z-score; Wilder RSI(14); distance from the 50d and 200d moving averages.
 3. **Walk-forward design** — 3 chronological **expanding-window** folds. Inside each
@@ -147,14 +147,14 @@ walk-forward practice, with the embargo preventing any label overlap at boundari
 | tiny Transformer | 9,025 | 1 encoder layer, d_model 32, 2 heads, FF 64, causal mask (Vaswani et al. 2017) |
 
 - **Baselines:** majority class (train positive rate); logistic regression on the
-  12 scaled features; ridge regression predicting the *next return* (direction =
+  13 scaled features; ridge regression predicting the *next return* (direction =
   sign of prediction).
 - **Costs:** long/flat positions pay 10 bps per side on every position change;
   buy&hold pays one entry side.
 
 ## 10 · Models
 
-All four architectures consume `(batch, 30, 12)` tensors of standardized causal
+All four architectures consume `(batch, 30, 13)` tensors of standardized causal
 features and emit a single logit, trained with `BCEWithLogitsLoss`. The Transformer
 uses a causal attention mask (unit-tested: perturbing positions `i+1:` leaves
 position `i`'s encoding unchanged). The CNN is strictly causal via left-padding.
@@ -327,7 +327,7 @@ from dl_financial_time_series.features import build_study_frame, build_windows, 
 csv = ensure_spy_data("data/raw")           # cached / copied / fetched — offline-safe
 frame = build_study_frame(load_spy_csv(csv))  # 4,016 usable rows, features + label
 x_seq, targets = build_windows(frame[list(FEATURES)].to_numpy(float), seq_len=30)
-print(x_seq.shape)   # (4016, 30, 12) — windows ending at each decision day
+print(x_seq.shape)   # (4016, 30, 13) — windows ending at each decision day
 ```
 
 ## 19 · Project structure
