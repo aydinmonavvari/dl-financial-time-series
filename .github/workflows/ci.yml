@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least-privilege default: read-only repository access for CI.
+permissions:
+  contents: read
+
 jobs:
   # Job A — light deps (no torch). The torch-dependent test modules skip
   # themselves via pytest.importorskip("torch"): 20 of 34 test cases run here.
